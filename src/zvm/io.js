@@ -22,6 +22,12 @@ TODO:
 
 */
 
+//  Set up speech and speech buffer.
+const speech = require("./speech.js");
+var SpeechBuffer = "";
+var ReadyToSpeak = true;
+
+
 const utils = require('../common/utils.js')
 const U2S = utils.U2S16
 //S2U = utils.S2U16
@@ -328,6 +334,8 @@ module.exports = {
 			// Tokenise the response
 			this.tokenise( options.bufaddr, options.parseaddr );
 		}
+
+		ReadyToSpeak = true;
 	},
 
 	input_stream: function( stream )
@@ -602,6 +610,8 @@ module.exports = {
 			{
 				if ( io.streams[1] )
 				{
+					//  Add this text to the speech output buffer.
+					SpeechBuffer = SpeechBuffer + " " + text;
 					Glk.glk_put_jstring( text );
 				}
 				// Transcript
@@ -746,6 +756,14 @@ module.exports = {
 	// Request line input
 	read: function( storer, text, parse, time, routine )
 	{
+		//  Say what's in the speech buffer.
+		if (ReadyToSpeak)
+		{
+			speech.speak(SpeechBuffer);
+			SpeechBuffer = "";
+			ReadyToSpeak = false;
+		}
+
 		var len = this.m.getUint8( text ),
 		initiallen = 0,
 		buffer,
